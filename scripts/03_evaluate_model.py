@@ -26,10 +26,10 @@ plt.style.use('seaborn-v0_8-darkgrid')
 sns.set_palette("husl")
 
 # Diretórios
-BASE_DIR = Path(__file__).parent / "archive"
-CSV_PATH = BASE_DIR / "dogs.csv"
-MODEL_DIR = Path(__file__).parent / "models"
-RESULTS_DIR = Path(__file__).parent / "results"
+BASE_DIR = Path(__file__).parent.parent / "data" / "dataset"
+CSV_PATH = Path(__file__).parent.parent / "data" / "dataset" / "dogs.csv"
+MODEL_DIR = Path(__file__).parent.parent / "outputs" / "models"
+RESULTS_DIR = Path(__file__).parent.parent / "outputs" / "results"
 RESULTS_DIR.mkdir(exist_ok=True)
 
 # Parâmetros
@@ -121,7 +121,7 @@ def evaluate_model(model, test_generator):
     
     return predictions, y_pred, y_true
 
-def plot_confusion_matrix(y_true, y_pred, class_names, top_n=30):
+def plot_confusion_matrix(y_true, y_pred, idx_to_class, top_n=30):
     """
     Plota matriz de confusão.
     Como temos muitas classes, mostra apenas as top N mais comuns.
@@ -139,7 +139,7 @@ def plot_confusion_matrix(y_true, y_pred, class_names, top_n=30):
     
     # Filtra matriz para top N classes
     cm_filtered = cm[np.ix_(top_classes_idx, top_classes_idx)]
-    class_names_filtered = [class_names[i] for i in top_classes_idx]
+    class_names_filtered = [idx_to_class[i] for i in top_classes_idx]
     
     # Plota
     fig, ax = plt.subplots(figsize=(20, 18))
@@ -322,68 +322,76 @@ def analyze_per_class_performance(y_true, y_pred, idx_to_class, top_n=20):
     print("PERFORMANCE POR RAÇA")
     print("=" * 80)
     
-    # Calcula acurácia por classe
-    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+    # Calcula acurácia (recall) por classe
+    from sklearn.metrics import precision_recall_fscore_support
     
     classes = sorted(set(y_true))
-    class_accuracies = []
+    class_metrics = []
     
-    for cls in classes:
-        mask = (y_true == cls)
-        if np.sum(mask) > 0:
-            acc = accuracy_score(y_true[mask], y_pred[mask])
-            class_accuracies.append((idx_to_class[cls], acc, np.sum(mask)))
+    # Calcula precision, recall, f1 para cada classe
+    precision, recall, f1, support = precision_recall_fscore_support(
+        y_true, y_pred, labels=classes, zero_division=0
+    )
     
-    # Ordena por acurácia
-    class_accuracies.sort(key=lambda x: x[1])
+    for i, cls in enumerate(classes):
+        breed_name = idx_to_class[cls]
+        class_metrics.append({
+            'breed': breed_name,
+            'precision': precision[i],
+            'recall': recall[i],
+            'f1': f1[i],
+            'support': support[i]
+        })
     
-    print(f"\n🏆 Top {top_n} raças com MELHOR performance:")
-    print(f"{'Nº':<4} {'Raça':<25} {'Acurácia':>10} {'Amostras':>10}")
-    print("-" * 55)
-    for i, (breed, acc, count) in enumerate(class_accuracies[-top_n:][::-1], 1):
-        print(f"{i:<4} {breed:<25} {acc:>9.2%} {count:>10}")
+    # Ordena por recall (acurácia da classe)
+    class_metrics_sorted = sorted(class_metrics, key=lambda x: x['recall'])
     
-    print(f"\n⚠️  Top {top_n} raças com PIOR performance:")
-    print(f"{'Nº':<4} {'Raça':<25} {'Acurácia':>10} {'Amostras':>10}")
-    print("-" * 55)
-    for i, (breed, acc, count) in enumerate(class_accuracies[:top_n], 1):
-        print(f"{i:<4} {breed:<25} {acc:>9.2%} {count:>10}")
+    print(f"\n🏆 Todas as {len(classes)} raças (ordenadas por recall):")
+    print(f"{'Nº':<4} {'Raça':<20} {'Precision':>10} {'Recall':>10} {'F1':>10} {'Amostras':>10}")
+    print("-" * 70)
+    for i, metrics in enumerate(class_metrics_sorted, 1):
+        print(f"{i:<4} {metrics['breed']:<20} {metrics['precision']:>9.2%} {metrics['recall']:>9.2%} "
+              f"{metrics['f1']:>9.2%} {metrics['support']:>10}")
     
-    # Plota
-    fig, axes = plt.subplots(1, 2, figsize=(18, 8))
+    # Plota todas as classes (já que são apenas 12)
+    fig, ax = plt.subplots(figsize=(14, 8))
     
-    # Melhores
-    ax = axes[0]
-    best = class_accuracies[-top_n:][::-1]
-    breeds_best = [b[0] for b in best]
-    accs_best = [b[1] for b in best]
-    ax.barh(breeds_best, accs_best, color='#2ecc71')
-    ax.set_xlabel('Acurácia')
-    ax.set_title(f'Top {top_n} Raças com Melhor Performance', fontweight='bold')
-    ax.set_xlim([0, 1])
-    ax.invert_yaxis()
-    for i, v in enumerate(accs_best):
-        ax.text(v + 0.01, i, f'{v:.2%}', va='center', fontsize=8)
+    # Ordena por recall para o gráfico
+    breeds = [m['breed'] for m in class_metrics_sorted]
+    recalls = [m['recall'] for m in class_metrics_sorted]
+    precisions = [m['precision'] for m in class_metrics_sorted]
+    f1s = [m['f1'] for m in class_metrics_sorted]
     
-    # Piores
-    ax = axes[1]
-    worst = class_accuracies[:top_n]
-    breeds_worst = [b[0] for b in worst]
-    accs_worst = [b[1] for b in worst]
-    ax.barh(breeds_worst, accs_worst, color='#e74c3c')
-    ax.set_xlabel('Acurácia')
-    ax.set_title(f'Top {top_n} Raças com Pior Performance', fontweight='bold')
-    ax.set_xlim([0, 1])
-    ax.invert_yaxis()
-    for i, v in enumerate(accs_worst):
-        ax.text(v + 0.01, i, f'{v:.2%}', va='center', fontsize=8)
+    x = np.arange(len(breeds))
+    width = 0.25
+    
+    bars1 = ax.barh(x - width, precisions, width, label='Precision', color='#3498db')
+    bars2 = ax.barh(x, recalls, width, label='Recall', color='#2ecc71')
+    bars3 = ax.barh(x + width, f1s, width, label='F1-Score', color='#e67e22')
+    
+    ax.set_xlabel('Score', fontweight='bold')
+    ax.set_ylabel('Raça', fontweight='bold')
+    ax.set_title('Performance por Raça (Precision, Recall, F1-Score)', fontweight='bold', fontsize=14)
+    ax.set_yticks(x)
+    ax.set_yticklabels(breeds)
+    ax.set_xlim([0, 1.1])
+    ax.legend(loc='lower right')
+    ax.grid(axis='x', alpha=0.3)
+    
+    # Adiciona valores nas barras
+    for bars in [bars1, bars2, bars3]:
+        for bar in bars:
+            width_val = bar.get_width()
+            if width_val > 0:
+                ax.text(width_val + 0.02, bar.get_y() + bar.get_height()/2, 
+                       f'{width_val:.2%}', va='center', fontsize=7)
     
     plt.tight_layout()
     plt.savefig(RESULTS_DIR / 'per_class_performance.png', dpi=300, bbox_inches='tight')
     print(f"\n   ✓ Salvo: {RESULTS_DIR / 'per_class_performance.png'}")
     plt.show()
     
-    return class_accuracies
+    return class_metrics_sorted
 
 def generate_classification_report(y_true, y_pred, idx_to_class):
     """Gera relatório detalhado de classificação"""
