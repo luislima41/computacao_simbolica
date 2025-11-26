@@ -18,8 +18,10 @@ plt.style.use('seaborn-v0_8-darkgrid')
 sns.set_palette("husl")
 
 # Diretório base
-BASE_DIR = Path(__file__).parent / "archive"
-CSV_PATH = BASE_DIR / "dogs.csv"
+BASE_DIR = Path(__file__).parent.parent / "data" / "dataset"
+CSV_PATH = Path(__file__).parent.parent / "data" / "dataset" / "dogs.csv"
+OUTPUT_DIR = Path(__file__).parent.parent / "outputs"
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 def load_dataset_info():
     """Carrega e analisa o CSV com informações do dataset"""
@@ -27,8 +29,22 @@ def load_dataset_info():
     print("ANÁLISE EXPLORATÓRIA DO DATASET DE CACHORROS")
     print("=" * 80)
     
+    # Define as 12 raças selecionadas para o projeto
+    selected_breeds = [
+        'Siberian Husky', 'Pug', 'Dalmation', 'German Sheperd',
+        'Golden Retriever', 'Beagle', 'Bulldog', 'Chihuahua',
+        'Doberman', 'Great Dane', 'Rottweiler', 'Chow'
+    ]
+    
     df = pd.read_csv(CSV_PATH)
-    print(f"\n📊 Total de imagens: {len(df)}")
+    print(f"\n📊 Total de imagens original: {len(df)}")
+    print(f"🐕 Raças originais: {df['labels'].nunique()}")
+    
+    # Filtra apenas as 12 raças selecionadas
+    df = df[df['labels'].isin(selected_breeds)].copy()
+    print(f"\n⚠️  Filtrando para 12 raças selecionadas...")
+    print(f"📊 Total de imagens filtradas: {len(df)}")
+    print(f"🐕 Raças selecionadas: {df['labels'].nunique()}")
     print(f"📁 Colunas: {list(df.columns)}")
     
     return df
@@ -114,8 +130,8 @@ def plot_class_distribution(df):
     ax.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('class_distribution.png', dpi=300, bbox_inches='tight')
-    print("   ✓ Salvo: class_distribution.png")
+    plt.savefig(OUTPUT_DIR / 'class_distribution.png', dpi=300, bbox_inches='tight')
+    print(f"   ✓ Salvo: {OUTPUT_DIR / 'class_distribution.png'}")
     plt.show()
 
 def analyze_image_properties(df):
@@ -185,8 +201,8 @@ def visualize_sample_images(df, n_samples=12):
             axes[idx].axis('off')
     
     plt.tight_layout()
-    plt.savefig('sample_images.png', dpi=300, bbox_inches='tight')
-    print("   ✓ Salvo: sample_images.png")
+    plt.savefig(OUTPUT_DIR / 'sample_images.png', dpi=300, bbox_inches='tight')
+    print(f"   ✓ Salvo: {OUTPUT_DIR / 'sample_images.png'}")
     plt.show()
 
 def check_data_integrity(df):
