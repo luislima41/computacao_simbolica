@@ -1,0 +1,11 @@
+{
+  "test_loss": 0.12493246048688889,
+  "test_accuracy": 0.9583333134651184,
+  "test_top5_accuracy": 1.0,
+  "num_classes": 12,
+  "training_samples": 1358,
+  "validation_samples": 120,
+  "test_samples": 120,
+  "epochs_trained": 30,
+  "timestamp": "2025-11-26T12:40:49.617805"
+}

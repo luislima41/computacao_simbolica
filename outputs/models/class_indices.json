@@ -1,0 +1,14 @@
+{
+  "Beagle": 0,
+  "Bulldog": 1,
+  "Chihuahua": 2,
+  "Chow": 3,
+  "Dalmation": 4,
+  "Doberman": 5,
+  "German Sheperd": 6,
+  "Golden Retriever": 7,
+  "Great Dane": 8,
+  "Pug": 9,
+  "Rottweiler": 10,
+  "Siberian Husky": 11
+}

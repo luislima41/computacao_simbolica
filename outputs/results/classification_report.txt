@@ -1,0 +1,21 @@
+RELATÓRIO DE CLASSIFICAÇÃO
+================================================================================
+
+                  precision    recall  f1-score   support
+
+          Beagle       1.00      1.00      1.00        10
+         Bulldog       0.89      0.80      0.84        10
+       Chihuahua       0.91      1.00      0.95        10
+            Chow       0.83      1.00      0.91        10
+       Dalmation       1.00      1.00      1.00        10
+        Doberman       1.00      1.00      1.00        10
+  German Sheperd       1.00      1.00      1.00        10
+Golden Retriever       1.00      0.80      0.89        10
+      Great Dane       1.00      1.00      1.00        10
+             Pug       0.91      1.00      0.95        10
+      Rottweiler       1.00      1.00      1.00        10
+  Siberian Husky       1.00      0.90      0.95        10
+
+        accuracy                           0.96       120
+       macro avg       0.96      0.96      0.96       120
+    weighted avg       0.96      0.96      0.96       120

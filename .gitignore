@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+venv/
+venv312/
+.venv/
+env/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TensorFlow
+*.h5
+*.pb
+checkpoint
+*.ckpt*
+
+# Dados grandes (descomente se necessário)
+# data/dataset/
+
+# Temporários
+*.log
+*.tmp
