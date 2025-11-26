@@ -47,8 +47,6 @@ Computação Simbólica/
 │   ├── training_history.png
 │   ├── class_distribution.png
 │   └── sample_images.png
-├── docs/
-│   └── README.md          # Documentação técnica detalhada
 ├── requirements.txt       # Dependências do projeto
 └── README.md             # Este arquivo
 ```
